@@ -1,0 +1,12 @@
+/* styles.css */
+[data-testid="stSidebar"] {
+    background-color: #01050f;
+}
+
+[data-testid="stSidebar"] div.stButton > button {
+    width: 100%;
+    height: 40px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    background: #01050f;
+}

@@ -7,11 +7,14 @@ div.stButton > button:hover {
 }
 
 
-[data-testid="stSidebarCollapsedControl"] {
-    display: none;
-}
 [data-testid="stBaseButton-header"] {
     display: none;
 }
+[data-testid="stSidebarNav"] {
+    display: none;
+}
+
+
+
 
 

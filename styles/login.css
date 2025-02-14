@@ -28,3 +28,7 @@
 [data-testid="stSidebar"] {
     display: none;
 }
+
+[data-testid="stSidebarCollapsedControl"] {
+    display: none;
+}
