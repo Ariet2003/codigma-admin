@@ -1,0 +1,26 @@
+/* Центрирование содержимого приложения */
+[data-testid="stFullScreenFrame"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрирование по вертикали */
+    align-items: center;     /* Центрирование по горизонтали */
+    padding-top: 50px;
+}
+[data-testid="stHeading"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрирование по вертикали */
+    align-items: center;     /* Центрирование по горизонтали */
+}
+[data-testid="stMarkdownContainer"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрирование по вертикали */
+    align-items: center;     /* Центрирование по горизонтали */
+}
+[data-testid="stButton"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрирование по вертикали */
+    align-items: center;     /* Центрирование по горизонтали */
+}

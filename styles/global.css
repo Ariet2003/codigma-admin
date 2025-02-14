@@ -1,0 +1,15 @@
+/* === Глобальные стили === */
+
+/* Стили для кнопок при наведении */
+div.stButton > button:hover {
+    background-color: #1F2A3D !important;
+    color: #FFFFFF !important;
+}
+
+/* Скрываем боковую панель */
+[data-testid="stSidebar"] {
+    display: none;
+}
+[data-testid="stSidebarCollapsedControl"] {
+    display: none;
+}

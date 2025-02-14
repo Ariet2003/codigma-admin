@@ -1,43 +1,45 @@
-# app.py
 import streamlit as st
 from db import get_user_by_email
 from pages.admin_dashboard import show_admin_dashboard
 
-custom_css = """
-<style>
-/* Стили для кнопок при наведении */
-div.stButton > button:hover {
-    background-color: #1F2A3D !important;
-    color: #FFFFFF !important;
-}
-</style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
 
-hide_sidebar_style = """
-    <style>
-    [data-testid="stSidebar"] { display: none; }
-    [data-testid="stSidebarCollapsedControl"] { display: none; }
-    </style>
-"""
-st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+# Функция для загрузки CSS-файла
+def load_css(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+
+# Загружаем глобальные стили
+load_css("styles/global.css")
+
 
 def main():
-
-
-    # Если пользователь не аутентифицирован, показываем кнопку для входа
     if not st.experimental_user.is_logged_in:
-        st.header("Авторизация")
+        # Загружаем стили только для страницы входа
+        load_css("styles/login.css")
+
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+
+        # Аватарка
+        st.image("public/admin_avatar.png", width=150)
+
+        # Заголовок
+        st.header("Вход в админку")
+
+        # Описание
         st.write("Нажмите на кнопку ниже, чтобы войти через OIDC-провайдера.")
-        if st.button("Войти"):
+
+        # Кнопка для входа через Google
+        if st.button("Войти через Google"):
             st.login()  # Использует настройки из [auth] в secrets.toml
+
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
-        # Пользователь успешно аутентифицирован через провайдера
+        # Пользователь аутентифицирован
         user_info = st.experimental_user
-        email = user_info.email  # Обычно email возвращается в токене
+        email = user_info.email
         st.write(f"Добро пожаловать, {user_info.name}!")
 
-        # Проверяем наличие пользователя в БД по email
         db_user = get_user_by_email(email)
         if db_user:
             _, _, role = db_user
