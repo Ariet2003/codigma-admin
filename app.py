@@ -5,6 +5,14 @@ from pages.admin_dashboard import show_admin_dashboard
 
 
 def main():
+    hide_sidebar_style = """
+        <style>
+        [data-testid="stSidebar"] { display: none; }
+        [data-testid="stSidebarCollapsedControl"] { display: none; }
+        </style>
+    """
+    st.markdown(hide_sidebar_style, unsafe_allow_html=True)
+
     # Если пользователь не аутентифицирован, показываем кнопку для входа
     if not st.experimental_user.is_logged_in:
         st.header("Авторизация")
