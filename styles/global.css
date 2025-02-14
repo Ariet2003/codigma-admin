@@ -6,10 +6,12 @@ div.stButton > button:hover {
     color: #FFFFFF !important;
 }
 
-/* Скрываем боковую панель */
-[data-testid="stSidebar"] {
-    display: none;
-}
+
 [data-testid="stSidebarCollapsedControl"] {
     display: none;
 }
+[data-testid="stBaseButton-header"] {
+    display: none;
+}
+
+

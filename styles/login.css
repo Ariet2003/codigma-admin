@@ -24,3 +24,7 @@
     justify-content: center; /* Центрирование по вертикали */
     align-items: center;     /* Центрирование по горизонтали */
 }
+/* Скрываем боковую панель */
+[data-testid="stSidebar"] {
+    display: none;
+}
