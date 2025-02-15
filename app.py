@@ -43,9 +43,6 @@ def main():
             load_css("styles/login.css")
             st.error("Пользователь не найден в базе данных.")
 
-        if st.button("Выйти"):
-            st.logout()
-
 
 if __name__ == "__main__":
     main()

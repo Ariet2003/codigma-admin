@@ -1,5 +1,5 @@
 import streamlit as st
-
+from pages.settings import show_settings_page
 
 def show_admin_dashboard(email: str):
     # Функция для подключения локального CSS файла
@@ -54,5 +54,4 @@ def show_admin_dashboard(email: str):
         st.title("Create Task")
         st.write("Форма для создания новой задачи.")
     elif st.session_state.page == "Settings":
-        st.title("Settings")
-        st.write("Настройки админ-панели.")
+        show_settings_page()
