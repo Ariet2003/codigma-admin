@@ -1,0 +1,34 @@
+
+[class="st-emotion-cache-is0spm egexzqm0"] {
+   color: #9CA3AF;
+}
+
+[class="st-emotion-cache-1qspk1 egexzqm0"] {
+   color: #9CA3AF;
+}
+
+[class="st-emotion-cache-hlecjk e1d5ycv51"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+    width: fit-content;
+}
+
+/* Если внутри есть элементы, например, <p> */
+[class="st-emotion-cache-hlecjk e1d5ycv51"] p {
+    color: #000000 !important;
+    margin: 0;
+}
+
+/* При наведении мыши шрифт становится белым */
+[class="st-emotion-cache-hlecjk e1d5ycv51"]:hover {
+    color: #ffffff !important;
+}
+
+/* Если внутри есть <p> — тоже */
+[class="st-emotion-cache-hlecjk e1d5ycv51"]:hover p {
+    color: #ffffff !important;
+}
