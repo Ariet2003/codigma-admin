@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 from utils.problem_generator import problem_generator
+from utils.generate_leetcode_task import generate_leetcode_task
 
 def show_create_task_page():
     # Функция для подключения локального CSS файла
@@ -54,7 +55,8 @@ def show_create_task_page():
 
     col_add_rem_out = st.columns(3)
     with col_add_rem_out[0]:
-        st.button("✨ Генерировать Markdown", on_click=remove_output_callback)
+        if st.button("✨ Генерировать Markdown"):
+            st.session_state["task_description"] = generate_leetcode_task(st.session_state["task_description"])
     with col_add_rem_out[1]:
         # Переключатель для выбора режима отображения Markdown
         toggle_state = st.toggle("Markdown", key="markdown_toggle")
