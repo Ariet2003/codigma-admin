@@ -3,12 +3,14 @@ import json
 from utils.problem_generator import problem_generator
 
 def show_create_task_page():
-    # Подключение локального CSS файла
+    # Функция для подключения локального CSS файла
     def local_css(file_name):
         with open(file_name, "r", encoding="utf-8") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
+    # Подключаем глобальные стили и стили для описания задачи отдельно
     local_css("styles/create_task.css")
+    local_css("styles/description.css")  # Здесь находятся стили для контейнера описания
 
     # Инициализация состояния для динамических полей
     if "input_count" not in st.session_state:
@@ -16,7 +18,7 @@ def show_create_task_page():
     if "output_count" not in st.session_state:
         st.session_state.output_count = 1
 
-    # Коллбэки
+    # Коллбэки для добавления/удаления полей
     def add_input_callback():
         st.session_state.input_count += 1
 
@@ -45,7 +47,34 @@ def show_create_task_page():
 
     # --- Описание задачи ---
     st.markdown('<h4>Описание задачи</h4>', unsafe_allow_html=True)
-    st.text_area("Напишите в формате Marcdown (.md)", height=150, key="task_description")
+
+    # Инициализируем значение описания задачи, если его ещё нет
+    if "task_description" not in st.session_state:
+        st.session_state["task_description"] = ""
+
+    col_add_rem_out = st.columns(3)
+    with col_add_rem_out[0]:
+        st.button("✨ Генерировать Markdown", on_click=remove_output_callback)
+    with col_add_rem_out[1]:
+        # Переключатель для выбора режима отображения Markdown
+        toggle_state = st.toggle("Markdown", key="markdown_toggle")
+
+    if toggle_state:
+        # Если включён режим Markdown, отображаем текст в контейнере с классом для стилей
+        st.markdown(
+            f'<div class="description-markdown-container">{'\n\n' + st.session_state["task_description"]}</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        # Если переключатель выключен, показываем текстовое поле для редактирования.
+        new_text = st.text_area(
+            "Напишите условие и примеры тестов (входные и выходные данные)",
+            height=150,
+            value=st.session_state["task_description"],
+            key="task_description_edit"
+        )
+        # Сохраняем введённое значение в основной ключ
+        st.session_state["task_description"] = new_text
 
     st.markdown("---")
 
@@ -129,7 +158,7 @@ def show_create_task_page():
                 metadata["outputs"].append({"name": output_name, "type": output_type})
 
             print(json.dumps(metadata, ensure_ascii=False, indent=4))
-            st.success("Задача успешно создана! 🎉")
+            st.success("Шаблонные коды успешно созданы! 🎉")
             # Сохраняем сгенерированные шаблоны в st.session_state
             st.session_state.boilerplate_dict = problem_generator(metadata)
 

@@ -1,0 +1,7 @@
+/* styles/description.css */
+.description-markdown-container {
+    background-color: rgb(31, 42, 61);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+}
