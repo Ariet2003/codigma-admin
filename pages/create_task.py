@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+from utils.problem_generator import problem_generator
 
 def show_create_task_page():
     # Подключение локального CSS файла
@@ -114,7 +115,7 @@ def show_create_task_page():
         if error_messages:
             st.error("Пожалуйста, заполните все обязательные поля:\n" + "\n".join(error_messages))
         else:
-            task_data = {
+            metadata = {
                 "task_name": st.session_state.get("task_name", ""),
                 "difficulty": st.session_state.get("task_difficulty", ""),
                 "description": st.session_state.get("task_description", ""),
@@ -126,15 +127,21 @@ def show_create_task_page():
             for i in range(st.session_state.input_count):
                 input_name = st.session_state.get(f"input_name_{i}", "")
                 input_type = st.session_state.get(f"input_type_{i}", "")
-                task_data["inputs"].append({"name": input_name, "type": input_type})
+                metadata["inputs"].append({"name": input_name, "type": input_type})
 
             for i in range(st.session_state.output_count):
                 output_name = st.session_state.get(f"output_name_{i}", "")
                 output_type = st.session_state.get(f"output_type_{i}", "")
-                task_data["outputs"].append({"name": output_name, "type": output_type})
+                metadata["outputs"].append({"name": output_name, "type": output_type})
 
             # Выводим данные в виде форматированного JSON в терминал
-            print(json.dumps(task_data, ensure_ascii=False, indent=4))
+            print(json.dumps(metadata, ensure_ascii=False, indent=4))
             st.success("Задача успешно создана! 🎉")
+
+            # Вызов функции, которая возвращает JSON-строку с шаблонами кода
+            boilerplate_codes = problem_generator(metadata)
+
+            # Вывод полученных данных на консоль
+            print(json.dumps(boilerplate_codes, ensure_ascii=False, indent=4))
 
     st.markdown('</div>', unsafe_allow_html=True)
