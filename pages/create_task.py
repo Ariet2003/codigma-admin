@@ -33,7 +33,6 @@ def show_create_task_page():
 
     # Основной контейнер
     st.markdown('<div class="create-task-container">', unsafe_allow_html=True)
-
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
 
     # --- Детали задачи ---
@@ -53,7 +52,6 @@ def show_create_task_page():
     # --- Генератор шаблонного кода ---
     st.markdown('<h4>Генератор шаблонного кода</h4>', unsafe_allow_html=True)
     st.text_input("Название функции", key="function_name")
-
     st.text("")
     st.text("")
 
@@ -89,10 +87,9 @@ def show_create_task_page():
     with col_add_rem_out[1]:
         st.button("Удалить ", on_click=remove_output_callback)
 
-    # При нажатии кнопки собираем все данные, проверяем заполненность полей и выводим их в формате JSON
+    # При нажатии кнопки собираем все данные, проверяем заполненность полей и генерируем шаблоны
     if st.button("💡 Создать шаблон", type="primary"):
         error_messages = []
-
         # Проверка обязательных полей
         if not st.session_state.get("task_name", "").strip():
             error_messages.append("Название задачи не заполнено!")
@@ -111,7 +108,6 @@ def show_create_task_page():
             if not st.session_state.get(f"output_name_{i}", "").strip():
                 error_messages.append(f"Название переменной выхода {i + 1} не заполнено!")
 
-        # Если есть ошибки, выводим уведомление, иначе – выводим JSON
         if error_messages:
             st.error("Пожалуйста, заполните все обязательные поля:\n" + "\n".join(error_messages))
         else:
@@ -123,25 +119,53 @@ def show_create_task_page():
                 "inputs": [],
                 "outputs": []
             }
-
             for i in range(st.session_state.input_count):
                 input_name = st.session_state.get(f"input_name_{i}", "")
                 input_type = st.session_state.get(f"input_type_{i}", "")
                 metadata["inputs"].append({"name": input_name, "type": input_type})
-
             for i in range(st.session_state.output_count):
                 output_name = st.session_state.get(f"output_name_{i}", "")
                 output_type = st.session_state.get(f"output_type_{i}", "")
                 metadata["outputs"].append({"name": output_name, "type": output_type})
 
-            # Выводим данные в виде форматированного JSON в терминал
             print(json.dumps(metadata, ensure_ascii=False, indent=4))
             st.success("Задача успешно создана! 🎉")
+            # Сохраняем сгенерированные шаблоны в st.session_state
+            st.session_state.boilerplate_dict = problem_generator(metadata)
 
-            # Вызов функции, которая возвращает JSON-строку с шаблонами кода
-            boilerplate_codes = problem_generator(metadata)
+    # Если шаблоны уже сгенерированы, отображаем комбобокс и блоки с кодом
+    if "boilerplate_dict" in st.session_state:
+        st.markdown("---")
+        boilerplate_dict = st.session_state.boilerplate_dict
 
-            # Вывод полученных данных на консоль
-            print(json.dumps(boilerplate_codes, ensure_ascii=False, indent=4))
+        # Комбобокс для выбора языка (с сохранением выбора в session_state)
+        lang_options = ["C++", "JavaScript", "Rust", "Java"]
+        selected_lang = st.selectbox("Выберите язык для отображения кода", lang_options, key="selected_lang")
+
+        # Определяем ключи для выбранного языка и параметр language для st.code
+        if selected_lang == "C++":
+            template_key = "cppTemplate"
+            full_key = "fullCpp"
+            code_lang = "cpp"
+        elif selected_lang == "JavaScript":
+            template_key = "jsTemplate"
+            full_key = "fullJs"
+            code_lang = "javascript"
+        elif selected_lang == "Rust":
+            template_key = "rustTemplate"
+            full_key = "fullRust"
+            code_lang = "rust"
+        elif selected_lang == "Java":
+            template_key = "javaTemplate"
+            full_key = "fullJava"
+            code_lang = "java"
+
+        template_code = boilerplate_dict.get(template_key, "")
+        full_code = boilerplate_dict.get(full_key, "")
+
+        st.markdown("#### Шаблонный код:")
+        st.code(template_code, language=code_lang)
+        st.markdown("#### Полный шаблонный код:")
+        st.code(full_code, language=code_lang)
 
     st.markdown('</div>', unsafe_allow_html=True)
