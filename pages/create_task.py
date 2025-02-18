@@ -1,7 +1,9 @@
 import streamlit as st
+from streamlit_ace import st_ace, KEYBINDINGS, LANGUAGES, THEMES
 import json
 from utils.problem_generator import problem_generator
 from utils.generate_leetcode_task import generate_leetcode_task
+
 
 def show_create_task_page():
     # Функция для подключения локального CSS файла
@@ -39,7 +41,7 @@ def show_create_task_page():
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
 
     # --- Детали задачи ---
-    st.markdown('<h4>Детали задачи</h4>', unsafe_allow_html=True)
+    st.markdown('<h3>Детали задачи</h3>', unsafe_allow_html=True)
     col1, col2 = st.columns([3, 1])
     with col1:
         st.text_input("Название задачи", key="task_name")
@@ -47,7 +49,7 @@ def show_create_task_page():
         st.selectbox("Сложность алгоритма", options=["Easy", "Medium", "Hard"], key="task_difficulty")
 
     # --- Описание задачи ---
-    st.markdown('<h4>Описание задачи</h4>', unsafe_allow_html=True)
+    st.markdown('<h5>Описание задачи</h5>', unsafe_allow_html=True)
 
     # Инициализируем значение описания задачи, если его ещё нет
     if "task_description" not in st.session_state:
@@ -81,7 +83,7 @@ def show_create_task_page():
     st.markdown("---")
 
     # --- Генератор шаблонного кода ---
-    st.markdown('<h4>Генератор шаблонного кода</h4>', unsafe_allow_html=True)
+    st.markdown('<h3>Генератор шаблонного кода</h3>', unsafe_allow_html=True)
     st.text_input("Название функции", key="function_name")
     st.text("")
     st.text("")
@@ -104,7 +106,7 @@ def show_create_task_page():
         st.button("Удалить", on_click=remove_input_callback)
 
     # --- Выходные данные ---
-    st.markdown('<h3>Структура выходных данных</h3>', unsafe_allow_html=True)
+    st.markdown('<h5>Структура выходных данных</h5>', unsafe_allow_html=True)
     for i in range(st.session_state.output_count):
         col_var, col_type = st.columns([2, 1])
         with col_var:
@@ -194,9 +196,36 @@ def show_create_task_page():
         template_code = boilerplate_dict.get(template_key, "")
         full_code = boilerplate_dict.get(full_key, "")
 
-        st.markdown("#### Шаблонный код:")
+        st.markdown('<h5>Шаблонный код</h5>', unsafe_allow_html=True)
         st.code(template_code, language=code_lang)
-        st.markdown("#### Полный шаблонный код:")
+        st.markdown('<h5>Полный шаблонный код</h5>', unsafe_allow_html=True)
         st.code(full_code, language=code_lang)
+
+        st.divider()
+
+        st.markdown('<h3>Тесты для задачки</h3>', unsafe_allow_html=True)
+
+        c1, c2 = st.columns([3, 1])
+
+        c2.subheader("Parameters")
+        with c1:
+            # Добавляем редактируемое кодовое поле для тестов с помощью streamlit-ace
+            test_code = st_ace(
+                placeholder="Напишите свой код здесь",
+                language=c2.selectbox("Языковой режим", options=["c_cpp", "javascript", "rust", "java"], index=0),
+                theme="cobalt",
+                keybinding="vscode",
+                font_size=14,
+                tab_size=8,
+                show_gutter=True,
+                show_print_margin=False,
+                wrap=False,
+                auto_update=True,
+                readonly=False,
+                min_lines=15,
+                key="ace",
+            )
+            c2.slider("Количество тестов", 5, 20, 10),
+            c2.button("✨ Тесткейсы", type="primary")
 
     st.markdown('</div>', unsafe_allow_html=True)
