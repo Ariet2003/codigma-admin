@@ -66,7 +66,7 @@ def show_create_task_page():
     if toggle_state:
         # Если включён режим Markdown, отображаем текст в контейнере с классом для стилей
         st.markdown(
-            f'<div class="description-markdown-container">{'\n\n' + st.session_state["task_description"]}</div>',
+            f'<div class="description-markdown-container">{"\n\n" + st.session_state["task_description"]}</div>',
             unsafe_allow_html=True
         )
     else:
@@ -206,13 +206,30 @@ def show_create_task_page():
         st.markdown('<h3>Тесты для задачки</h3>', unsafe_allow_html=True)
 
         c1, c2 = st.columns([3, 1])
-
         c2.subheader("Parameters")
+
+        # Выбор языка для редактора тестов
+        ace_language = c2.selectbox(
+            "Языковой режим для тестов",
+            options=["c_cpp", "javascript", "rust", "java"],
+            index=0,
+            key="ace_language"
+        )
+
+        # Определяем значение по умолчанию для редактора тестов в зависимости от выбранного языка
+        default_code_mapping = {
+            "c_cpp": boilerplate_dict.get("cppTemplate", ""),
+            "javascript": boilerplate_dict.get("jsTemplate", ""),
+            "rust": boilerplate_dict.get("rustTemplate", ""),
+            "java": boilerplate_dict.get("javaTemplate", "")
+        }
+        default_test_code = default_code_mapping.get(ace_language, template_code)
+
         with c1:
-            # Добавляем редактируемое кодовое поле для тестов с помощью streamlit-ace
             test_code = st_ace(
+                value=default_test_code,
                 placeholder="Напишите свой код здесь",
-                language=c2.selectbox("Языковой режим", options=["c_cpp", "javascript", "rust", "java"], index=0),
+                language=ace_language,
                 theme="cobalt",
                 keybinding="vscode",
                 font_size=14,
@@ -223,9 +240,10 @@ def show_create_task_page():
                 auto_update=True,
                 readonly=False,
                 min_lines=15,
-                key="ace",
+                # Динамический ключ, зависящий от выбранного языка
+                key=f"ace_{ace_language}"
             )
-            c2.slider("Количество тестов", 5, 20, 10),
-            c2.button("✨ Тесткейсы", type="primary")
+        c2.slider("Количество тестов", 5, 20, 10)
+        c2.button("✨ Тесткейсы", type="primary")
 
     st.markdown('</div>', unsafe_allow_html=True)
