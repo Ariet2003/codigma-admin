@@ -253,26 +253,26 @@ def show_create_task_page():
 
         # Кнопка для генерации тесткейсов
         if c2.button("✨ Тесткейсы", type="primary"):
-            # Проверяем, что шаблон задачи уже создан и сохранён
             if "metadata" not in st.session_state:
                 st.error("Сначала создайте шаблон задачи!")
             else:
                 task_name = st.session_state.get("task_name", "")
                 metadata = st.session_state.get("metadata")
-                # Берём solution_code из редактора st_ace
                 solution_code = test_code
                 tests = generate_tests(task_name, metadata, solution_code, test_count)
-                print(tests)  # Вывод тесткейсов в консоль
                 formatted_tests = parse_tests(tests)
-                print("\n\n\n\n")
-                print(formatted_tests)
-
-                for test in formatted_tests:
-                    print("Input:")
-                    print(test["input"])
-                    print("Expected Output:")
-                    print(test["expected_output"])
-                    print("-" * 40)
+                # Сохраняем тесткейсы в session_state
+                st.session_state["formatted_tests"] = formatted_tests
                 st.success("Тесткейсы сгенерированы, форматированы и выведены в консоль.")
+
+        # Вывод тесткейсов, если они уже сохранены
+        if "formatted_tests" in st.session_state:
+            st.markdown("### Сгенерированные тесткейсы")
+            for i, test in enumerate(st.session_state["formatted_tests"]):
+                col_input, col_expected = st.columns(2)
+                with col_input:
+                    st.text_area(f"Входные данные {i + 1}", value=test["input"], key=f"test_input_{i}")
+                with col_expected:
+                    st.text_area(f"Ожидаемый вывод {i + 1}", value=test["expected_output"], key=f"test_output_{i}")
 
     st.markdown('</div>', unsafe_allow_html=True)
