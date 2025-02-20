@@ -118,92 +118,82 @@ class FullProblemDefinitionParser(BaseParser):
         self.testCases = metadata.get("testCases", [])
 
     def generate_cpp(self) -> str:
-        # Для каждого поля генерируем блок чтения из std::cin с использованием std::getline
         input_reads_list = []
         for i, field in enumerate(self.inputFields):
             if field["type"].startswith("list<list<"):
                 code = (
-                    f"{{\n"
-                    f"    std::string line;\n"
+                    f"std::string line;\n"
+                    f"std::getline(std::cin, line);\n"
+                    f"std::istringstream iss(line);\n"
+                    f"int outer_size_{field['name']}; iss >> outer_size_{field['name']};\n"
+                    f"{self.map_type_to_cpp(field['type'])} {field['name']}(outer_size_{field['name']});\n"
+                    f"for (int i = 0; i < outer_size_{field['name']}; i++) {{\n"
                     f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream iss(line);\n"
-                    f"    int outer_size_{field['name']}; iss >> outer_size_{field['name']};\n"
-                    f"    {self.map_type_to_cpp(field['type'])} {field['name']}(outer_size_{field['name']});\n"
-                    f"    for (int i = 0; i < outer_size_{field['name']}; i++) {{\n"
-                    f"        std::getline(std::cin, line);\n"
-                    f"        std::istringstream inner_iss(line);\n"
-                    f"        int inner_size_{field['name']}; inner_iss >> inner_size_{field['name']};\n"
-                    f"        {field['name']}[i].resize(inner_size_{field['name']});\n"
-                    f"        std::getline(std::cin, line);\n"
-                    f"        std::istringstream elems(line);\n"
-                    f"        for (int j = 0; j < inner_size_{field['name']}; j++) elems >> {field['name']}[i][j];\n"
-                    f"    }}\n"
+                    f"    std::istringstream inner_iss(line);\n"
+                    f"    int inner_size_{field['name']}; inner_iss >> inner_size_{field['name']};\n"
+                    f"    {field['name']}[i].resize(inner_size_{field['name']});\n"
+                    f"    std::getline(std::cin, line);\n"
+                    f"    std::istringstream elems(line);\n"
+                    f"    for (int j = 0; j < inner_size_{field['name']}; j++) elems >> {field['name']}[i][j];\n"
                     f"}}"
                 )
             elif field["type"].startswith("list<"):
                 code = (
-                    f"{{\n"
-                    f"    std::string line;\n"
-                    f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream iss(line);\n"
-                    f"    int size_{field['name']}; iss >> size_{field['name']};\n"
-                    f"    {self.map_type_to_cpp(field['type'])} {field['name']}(size_{field['name']});\n"
-                    f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream elems(line);\n"
-                    f"    for (int i = 0; i < size_{field['name']}; i++) elems >> {field['name']}[i];\n"
-                    f"}}"
+                    f"std::string line;\n"
+                    f"std::getline(std::cin, line);\n"
+                    f"std::istringstream iss(line);\n"
+                    f"int size_{field['name']}; iss >> size_{field['name']};\n"
+                    f"{self.map_type_to_cpp(field['type'])} {field['name']}(size_{field['name']});\n"
+                    f"std::getline(std::cin, line);\n"
+                    f"std::istringstream elems(line);\n"
+                    f"for (int i = 0; i < size_{field['name']}; i++) elems >> {field['name']}[i];"
                 )
             else:
                 code = (
-                    f"{{\n"
-                    f"    std::string line;\n"
-                    f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream iss(line);\n"
-                    f"    {self.map_type_to_cpp(field['type'])} {field['name']};\n"
-                    f"    iss >> {field['name']};\n"
-                    f"}}"
+                    f"std::string line;\n"
+                    f"std::getline(std::cin, line);\n"
+                    f"std::istringstream iss(line);\n"
+                    f"{self.map_type_to_cpp(field['type'])} {field['name']};\n"
+                    f"iss >> {field['name']};"
                 )
             input_reads_list.append(code)
         input_reads_code = "\n  ".join(input_reads_list)
 
-        # Генерируем вызов функции
         output_type = self.map_type_to_cpp(self.outputFields[0]['type'])
         func_call = f"{output_type} result = {self.functionName}(" + ", ".join(
             [field["name"] for field in self.inputFields]
         ) + ");"
 
-        # Если возвращаемое значение – матрица, добавляем функцию для её преобразования в строку
         has_matrix_output = output_type.startswith("std::vector<std::vector<")
         matrix_to_string_func = ""
         if has_matrix_output:
             matrix_to_string_func = """
-std::string matrixToString(const std::vector<std::vector<int>>& matrix) {
-    std::ostringstream oss;
-    for (const auto& row : matrix) {
-        for (const auto& elem : row) {
-            oss << elem << " ";
+    std::string matrixToString(const std::vector<std::vector<int>>& matrix) {
+        std::ostringstream oss;
+        for (const auto& row : matrix) {
+            for (const auto& elem : row) {
+                oss << elem << " ";
+            }
+            oss << "\\n";
         }
-        oss << "\\n";
+        return oss.str();
     }
-    return oss.str();
-}
-"""
-
+    """
         return f"""#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <algorithm>
-{matrix_to_string_func}
-##USER_CODE_HERE##
+    #include <sstream>
+    #include <vector>
+    #include <string>
+    #include <algorithm>
+    {matrix_to_string_func}
+    ##USER_CODE_HERE##
 
-int main() {{
-  {input_reads_code}
-  {func_call}
-  {"std::cout << matrixToString(result) << std::endl;" if has_matrix_output else "std::cout << result << std::endl;"}
-  return 0;
-}}
-"""
+    int main() {{
+      {input_reads_code}
+      {func_call}
+      {"std::cout << matrixToString(result) << std::endl;" if has_matrix_output else "std::cout << result << std::endl;"}
+      return 0;
+    }}
+    """
 
     def generate_js(self) -> str:
         # Чтение из стандартного ввода с помощью Node.js (синхронное чтение из '/dev/stdin')
