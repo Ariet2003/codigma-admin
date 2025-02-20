@@ -3,6 +3,7 @@ from streamlit_ace import st_ace, KEYBINDINGS, LANGUAGES, THEMES
 import json
 from utils.problem_generator import problem_generator
 from utils.generate_leetcode_task import generate_leetcode_task
+from utils.generate_tests import generate_tests  # Импорт функции generate_tests
 
 
 def show_create_task_page():
@@ -165,6 +166,8 @@ def show_create_task_page():
             st.success("Шаблонные коды успешно созданы! 🎉")
             # Сохраняем сгенерированные шаблоны в st.session_state
             st.session_state.boilerplate_dict = problem_generator(metadata)
+            # Сохраняем metadata для дальнейшего использования
+            st.session_state.metadata = metadata
 
     # Если шаблоны уже сгенерированы, отображаем комбобокс и блоки с кодом
     if "boilerplate_dict" in st.session_state:
@@ -243,7 +246,22 @@ def show_create_task_page():
                 # Динамический ключ, зависящий от выбранного языка
                 key=f"ace_{ace_language}"
             )
-        c2.slider("Количество тестов", 5, 20, 10)
-        c2.button("✨ Тесткейсы", type="primary")
+
+        # Сохраняем значение слайдера в переменную test_count
+        test_count = c2.slider("Количество тестов", 5, 20, 10)
+
+        # Кнопка для генерации тесткейсов
+        if c2.button("✨ Тесткейсы", type="primary"):
+            # Проверяем, что шаблон задачи уже создан и сохранён
+            if "metadata" not in st.session_state:
+                st.error("Сначала создайте шаблон задачи!")
+            else:
+                task_name = st.session_state.get("task_name", "")
+                metadata = st.session_state.get("metadata")
+                # Берём solution_code из редактора st_ace
+                solution_code = test_code
+                tests = generate_tests(task_name, metadata, solution_code, test_count)
+                print(tests)  # Вывод тесткейсов в консоль
+                st.success("Тесткейсы сгенерированы и выведены в консоль.")
 
     st.markdown('</div>', unsafe_allow_html=True)
