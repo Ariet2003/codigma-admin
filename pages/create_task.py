@@ -38,6 +38,13 @@ def show_create_task_page():
         if st.session_state.output_count > 1:
             st.session_state.output_count -= 1
 
+    def delete_test(i):
+        tests = st.session_state["formatted_tests"]
+        tests.pop(i)
+        st.session_state["formatted_tests"] = tests
+        # Переключаем флаг, чтобы обновить состояние
+        st.session_state["delete_flag"] = not st.session_state.get("delete_flag", False)
+
     # Основной контейнер
     st.markdown('<div class="create-task-container">', unsafe_allow_html=True)
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
@@ -243,7 +250,7 @@ def show_create_task_page():
                 wrap=False,
                 auto_update=True,
                 readonly=False,
-                min_lines=15,
+                min_lines=17,
                 # Динамический ключ, зависящий от выбранного языка
                 key=f"ace_{ace_language}"
             )
@@ -269,10 +276,12 @@ def show_create_task_page():
         if "formatted_tests" in st.session_state:
             st.markdown("### Сгенерированные тесткейсы")
             for i, test in enumerate(st.session_state["formatted_tests"]):
-                col_input, col_expected = st.columns(2)
+                col_input, col_expected, col_delete = st.columns([3, 3, 1])
                 with col_input:
                     st.text_area(f"Входные данные {i + 1}", value=test["input"], key=f"test_input_{i}")
                 with col_expected:
                     st.text_area(f"Ожидаемый вывод {i + 1}", value=test["expected_output"], key=f"test_output_{i}")
+                with col_delete:
+                    st.button("Удалить", key=f"delete_test_{i}", on_click=delete_test, args=(i,))
 
     st.markdown('</div>', unsafe_allow_html=True)
