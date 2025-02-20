@@ -3,7 +3,8 @@ from streamlit_ace import st_ace, KEYBINDINGS, LANGUAGES, THEMES
 import json
 from utils.problem_generator import problem_generator
 from utils.generate_leetcode_task import generate_leetcode_task
-from utils.generate_tests import generate_tests  # Импорт функции generate_tests
+from utils.generate_tests import generate_tests
+from utils.parse_tests import parse_tests
 
 
 def show_create_task_page():
@@ -262,6 +263,16 @@ def show_create_task_page():
                 solution_code = test_code
                 tests = generate_tests(task_name, metadata, solution_code, test_count)
                 print(tests)  # Вывод тесткейсов в консоль
-                st.success("Тесткейсы сгенерированы и выведены в консоль.")
+                formatted_tests = parse_tests(tests)
+                print("\n\n\n\n")
+                print(formatted_tests)
+
+                for test in formatted_tests:
+                    print("Input:")
+                    print(test["input"])
+                    print("Expected Output:")
+                    print(test["expected_output"])
+                    print("-" * 40)
+                st.success("Тесткейсы сгенерированы, форматированы и выведены в консоль.")
 
     st.markdown('</div>', unsafe_allow_html=True)
