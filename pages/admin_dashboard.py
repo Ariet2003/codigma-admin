@@ -11,12 +11,16 @@ def show_admin_dashboard(email: str):
     # Подключаем CSS стили из файла
     local_css("styles/dashboard.css")
 
-    # Инициализация выбранной страницы по умолчанию
-    if "page" not in st.session_state:
+    # Чтение query-параметров из URL с использованием нового API st.query_params
+    if "page" in st.query_params:
+        st.session_state.page = st.query_params["page"]
+    elif "page" not in st.session_state:
         st.session_state.page = "Home"
 
     def set_page(page):
         st.session_state.page = page
+        # Обновляем query-параметры, присваивая новое значение
+        st.query_params.page = page
 
     # Боковая панель с кнопками навигации
     st.sidebar.title("Меню")
@@ -35,7 +39,7 @@ def show_admin_dashboard(email: str):
     if st.sidebar.button(" ⚙️ Настройки"):
         set_page("Settings")
 
-    # Основное содержимое страницы
+    # Основное содержимое страницы в зависимости от выбранного значения
     if st.session_state.page == "Home":
         st.title("Admin Panel")
         st.write("Добро пожаловать в админ-панель!")
@@ -55,3 +59,9 @@ def show_admin_dashboard(email: str):
         show_create_task_page()
     elif st.session_state.page == "Settings":
         show_settings_page()
+
+
+if __name__ == "__main__":
+    # Предполагается, что пользователь уже аутентифицирован
+    email = "admin@example.com"  # или получить реальный email
+    show_admin_dashboard(email)
