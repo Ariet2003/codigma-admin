@@ -5,7 +5,7 @@ from utils.problem_generator import problem_generator
 from utils.generate_leetcode_task import generate_leetcode_task
 from utils.generate_tests import generate_tests
 from utils.parse_tests import parse_tests
-
+from utils.run_tests_on_code import run_judge0_testcases
 
 def show_create_task_page():
     # Функция для подключения локального CSS файла
@@ -278,7 +278,7 @@ def show_create_task_page():
                 # Сохраняем тесткейсы в session_state
                 st.session_state["formatted_tests"] = formatted_tests
 
-        # Вывод тесткейсов, если они уже сохранены
+        # Вывод тесткейсов, если они уже сохранены, и кнопка для их тестирования через Judge0
         if "formatted_tests" in st.session_state:
             st.markdown("### Сгенерированные тесткейсы")
             for i, test in enumerate(st.session_state["formatted_tests"]):
@@ -292,5 +292,45 @@ def show_create_task_page():
 
             # Добавляем кнопку для ручного добавления нового тесткейса
             st.button("Добавить тесткейc", on_click=add_test_case)
+
+            # Кнопка для тестирования тесткейсов через Judge0
+            if st.button("Тестировать тесткейсы", icon="🚀", type="primary"):
+                if "formatted_tests" not in st.session_state:
+                    st.error("Сначала сгенерируйте тесткейсы!")
+                else:
+                    # Преобразуем тесткейсы в нужный формат, приводя stdin и expected_output к строке
+                    testcases = []
+                    for t in st.session_state["formatted_tests"]:
+                        testcases.append({
+                            "stdin": str(t.get("input", "")),
+                            "expected_output": str(t.get("expected_output", ""))
+                        })
+
+                    # Определяем language_id для Judge0 на основе выбранного языка
+                    judge0_language_ids = {
+                        "C++": 54,
+                        "JavaScript": 63,
+                        "Rust": 73,
+                        "Java": 62
+                    }
+                    selected_lang = st.session_state.get("selected_lang", "Java")
+                    language_id = judge0_language_ids.get(selected_lang, 62)
+
+                    # Здесь готовим финальный исходный код, подставляя код из редактора (test_code)
+                    # в полный шаблонный код (full_code), заменяя маркер ##USER_CODE_HERE##
+                    prepared_source_code = full_code.replace("##USER_CODE_HERE##", test_code)
+
+                    data_payload = {
+                        "language_id": language_id,
+                        "source_code": prepared_source_code,
+                        "testcases": testcases
+                    }
+                    print(data_payload)
+
+                    # Вызываем функцию тестирования и выводим результат в консоль
+                    result = run_judge0_testcases(data_payload)
+                    print("Результаты тестирования:")
+                    print(json.dumps(result, ensure_ascii=False, indent=4))
+                    st.success("Тестирование завершено! Проверьте консоль для результата.")
 
     st.markdown('</div>', unsafe_allow_html=True)
