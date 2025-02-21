@@ -45,6 +45,13 @@ def show_create_task_page():
         # Переключаем флаг, чтобы обновить состояние
         st.session_state["delete_flag"] = not st.session_state.get("delete_flag", False)
 
+    # Новый callback для добавления тесткейса
+    def add_test_case():
+        if "formatted_tests" not in st.session_state:
+            st.session_state["formatted_tests"] = []
+        st.session_state["formatted_tests"].append({"input": "", "expected_output": ""})
+        st.session_state["add_test_flag"] = not st.session_state.get("add_test_flag", False)
+
     # Основной контейнер
     st.markdown('<div class="create-task-container">', unsafe_allow_html=True)
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
@@ -270,7 +277,6 @@ def show_create_task_page():
                 formatted_tests = parse_tests(tests)
                 # Сохраняем тесткейсы в session_state
                 st.session_state["formatted_tests"] = formatted_tests
-                st.success("Тесткейсы сгенерированы, форматированы и выведены в консоль.")
 
         # Вывод тесткейсов, если они уже сохранены
         if "formatted_tests" in st.session_state:
@@ -283,5 +289,8 @@ def show_create_task_page():
                     st.text_area(f"Ожидаемый вывод {i + 1}", value=test["expected_output"], key=f"test_output_{i}")
                 with col_delete:
                     st.button("Удалить", key=f"delete_test_{i}", on_click=delete_test, args=(i,))
+
+            # Добавляем кнопку для ручного добавления нового тесткейса
+            st.button("Добавить тесткейc", on_click=add_test_case)
 
     st.markdown('</div>', unsafe_allow_html=True)
