@@ -298,6 +298,12 @@ def show_create_task_page():
                 if "formatted_tests" not in st.session_state:
                     st.error("Сначала сгенерируйте тесткейсы!")
                 else:
+                    # Обновляем значения тесткейсов из текстовых полей
+                    for i in range(len(st.session_state["formatted_tests"])):
+                        st.session_state["formatted_tests"][i]["input"] = st.session_state.get(f"test_input_{i}", "")
+                        st.session_state["formatted_tests"][i]["expected_output"] = st.session_state.get(
+                            f"test_output_{i}", "")
+
                     # Преобразуем тесткейсы в нужный формат, приводя stdin и expected_output к строке
                     testcases = []
                     for t in st.session_state["formatted_tests"]:
@@ -316,7 +322,7 @@ def show_create_task_page():
                     selected_lang = st.session_state.get("selected_lang", "Java")
                     language_id = judge0_language_ids.get(selected_lang, 62)
 
-                    # Здесь готовим финальный исходный код, подставляя код из редактора (test_code)
+                    # Готовим финальный исходный код, подставляя код из редактора (test_code)
                     # в полный шаблонный код (full_code), заменяя маркер ##USER_CODE_HERE##
                     prepared_source_code = full_code.replace("##USER_CODE_HERE##", test_code)
 
@@ -331,6 +337,14 @@ def show_create_task_page():
                     result = run_judge0_testcases(data_payload)
                     print("Результаты тестирования:")
                     print(json.dumps(result, ensure_ascii=False, indent=4))
-                    st.success("Тестирование завершено! Проверьте консоль для результата.")
+
+                    # Новая логика: если все тесты прошли, выводим сообщение об успехе,
+                    # иначе выводим номера тестов, которые не прошли (индексы преобразуем в 1-индексированные)
+                    if result.get("status") == 1:
+                        st.success("Все тесты успешно прошли!")
+                    else:
+                        incorrect_indexes = result.get("incorrect_test_indexes", [])
+                        incorrect_indexes = [str(idx + 1) for idx in incorrect_indexes]  # преобразуем в 1-индексацию
+                        st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
 
     st.markdown('</div>', unsafe_allow_html=True)
