@@ -274,9 +274,15 @@ def show_create_task_page():
                 metadata = st.session_state.get("metadata")
                 solution_code = test_code
                 tests = generate_tests(task_name, metadata, solution_code, test_count)
-                formatted_tests = parse_tests(tests)
-                # Сохраняем тесткейсы в session_state
-                st.session_state["formatted_tests"] = formatted_tests
+                new_formatted_tests = parse_tests(tests)
+                # Если тесткейсы уже существуют, добавляем новые, иначе создаём новый список
+                if "formatted_tests" in st.session_state:
+                    st.session_state["formatted_tests"].extend(new_formatted_tests)
+                else:
+                    st.session_state["formatted_tests"] = new_formatted_tests
+
+        # Добавляем кнопку для ручного добавления нового тесткейса
+        st.button("Добавить тесткейc", on_click=add_test_case)
 
         # Вывод тесткейсов, если они уже сохранены, и кнопка для их тестирования через Judge0
         if "formatted_tests" in st.session_state:
@@ -290,8 +296,7 @@ def show_create_task_page():
                 with col_delete:
                     st.button("Удалить", key=f"delete_test_{i}", on_click=delete_test, args=(i,))
 
-            # Добавляем кнопку для ручного добавления нового тесткейса
-            st.button("Добавить тесткейc", on_click=add_test_case)
+
 
             # Кнопка для тестирования тесткейсов через Judge0
             if st.button("Тестировать тесткейсы", icon="🚀", type="primary"):
