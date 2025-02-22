@@ -263,7 +263,7 @@ def show_create_task_page():
             )
 
         # Сохраняем значение слайдера в переменную test_count
-        test_count = c2.slider("Количество тестов", 5, 20, 10)
+        test_count = c2.slider("Количество тестов", 1, 20, 10)
 
         # Кнопка для генерации тесткейсов
         if c2.button("✨ Тесткейсы", type="primary"):
@@ -319,17 +319,27 @@ def show_create_task_page():
 
                     # Определяем language_id для Judge0 на основе выбранного языка
                     judge0_language_ids = {
-                        "C++": 54,
-                        "JavaScript": 63,
-                        "Rust": 73,
-                        "Java": 62
+                        "c_cpp": 54,
+                        "javascript": 63,
+                        "rust": 73,
+                        "java": 62
                     }
-                    selected_lang = st.session_state.get("selected_lang", "Java")
-                    language_id = judge0_language_ids.get(selected_lang, 62)
+                    test_lang = st.session_state.get("ace_language", "c_cpp")
+                    language_id = judge0_language_ids.get(test_lang, 54)
 
-                    # Готовим финальный исходный код, подставляя код из редактора (test_code)
-                    # в полный шаблонный код (full_code), заменяя маркер ##USER_CODE_HERE##
-                    prepared_source_code = full_code.replace("##USER_CODE_HERE##", test_code)
+                    # Определяем полный шаблонный код для тестирования на основе выбранного языка в ace_language
+                    if ace_language == "c_cpp":
+                        full_key_test = "fullCpp"
+                    elif ace_language == "javascript":
+                        full_key_test = "fullJs"
+                    elif ace_language == "rust":
+                        full_key_test = "fullRust"
+                    elif ace_language == "java":
+                        full_key_test = "fullJava"
+
+                    full_code_test = boilerplate_dict.get(full_key_test, "")
+                    # Подставляем код из редактора (test_code) в шаблонный код для тестирования
+                    prepared_source_code = full_code_test.replace("##USER_CODE_HERE##", test_code)
 
                     data_payload = {
                         "language_id": language_id,
@@ -349,7 +359,13 @@ def show_create_task_page():
                         st.success("Все тесты успешно прошли!")
                     else:
                         incorrect_indexes = result.get("incorrect_test_indexes", [])
+                        stderr = result.get("stderr")
                         incorrect_indexes = [str(idx + 1) for idx in incorrect_indexes]  # преобразуем в 1-индексацию
-                        st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
+                        if stderr != "Правильно":
+                            st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
+                            st.error("Вывод компиляции: " + stderr)
+                        else:
+                            st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
+                            st.error("Важно: если вы уверены, что тесткейсы правильные, возможно, код содержит ошибку. Убедитесь, что написанный код также верный.")
 
     st.markdown('</div>', unsafe_allow_html=True)
