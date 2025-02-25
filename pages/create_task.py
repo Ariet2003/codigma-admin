@@ -46,6 +46,35 @@ def show_create_task_page():
         st.session_state["formatted_tests"].append({"input": "", "expected_output": ""})
         st.session_state["add_test_flag"] = not st.session_state.get("add_test_flag", False)
 
+    def add_task_callback():
+        selected_lang = st.session_state.get("selected_lang", "C++")
+        boilerplate_dict = st.session_state.get("boilerplate_dict", {})
+        if selected_lang == "C++":
+            template_key = "cppTemplate"
+            full_key = "fullCpp"
+        elif selected_lang == "JavaScript":
+            template_key = "jsTemplate"
+            full_key = "fullJs"
+        elif selected_lang == "Rust":
+            template_key = "rustTemplate"
+            full_key = "fullRust"
+        elif selected_lang == "Java":
+            template_key = "javaTemplate"
+            full_key = "fullJava"
+
+        task_data = {
+            "Название задачи": st.session_state.get("task_name", ""),
+            "Сложность алгоритма": st.session_state.get("task_difficulty", ""),
+            "Условия задачи": st.session_state.get("task_description", ""),
+            "Название функции": st.session_state.get("function_name", ""),
+            "Структура входных и выходных данных": st.session_state.get("metadata", {}),
+            "Шаблонный код": boilerplate_dict.get(template_key, ""),
+            "Полный шаблонный код": boilerplate_dict.get(full_key, ""),
+            "Сгенерированные тесткейсы": st.session_state.get("formatted_tests", [])
+        }
+        # Выводим JSON в консоль
+        print(json.dumps(task_data, ensure_ascii=False, indent=4))
+
     st.markdown('<div class="create-task-container">', unsafe_allow_html=True)
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
 
@@ -312,6 +341,7 @@ def show_create_task_page():
 
                     if result.get("status") == 1:
                         st.success("Все тесты успешно прошли!")
+                        st.button("Добавить задачу", type="primary", on_click=add_task_callback)
                     else:
                         incorrect_indexes = result.get("incorrect_test_indexes", [])
                         stderr = result.get("stderr")
