@@ -47,29 +47,25 @@ def show_create_task_page():
         st.session_state["add_test_flag"] = not st.session_state.get("add_test_flag", False)
 
     def add_task_callback():
-        selected_lang = st.session_state.get("selected_lang", "C++")
         boilerplate_dict = st.session_state.get("boilerplate_dict", {})
-        if selected_lang == "C++":
-            template_key = "cppTemplate"
-            full_key = "fullCpp"
-        elif selected_lang == "JavaScript":
-            template_key = "jsTemplate"
-            full_key = "fullJs"
-        elif selected_lang == "Rust":
-            template_key = "rustTemplate"
-            full_key = "fullRust"
-        elif selected_lang == "Java":
-            template_key = "javaTemplate"
-            full_key = "fullJava"
-
         task_data = {
             "Название задачи": st.session_state.get("task_name", ""),
             "Сложность алгоритма": st.session_state.get("task_difficulty", ""),
             "Условия задачи": st.session_state.get("task_description", ""),
             "Название функции": st.session_state.get("function_name", ""),
             "Структура входных и выходных данных": st.session_state.get("metadata", {}),
-            "Шаблонный код": boilerplate_dict.get(template_key, ""),
-            "Полный шаблонный код": boilerplate_dict.get(full_key, ""),
+            "Шаблонные коды": {
+                "C++": boilerplate_dict.get("cppTemplate", ""),
+                "JavaScript": boilerplate_dict.get("jsTemplate", ""),
+                "Rust": boilerplate_dict.get("rustTemplate", ""),
+                "Java": boilerplate_dict.get("javaTemplate", "")
+            },
+            "Полные шаблонные коды": {
+                "C++": boilerplate_dict.get("fullCpp", ""),
+                "JavaScript": boilerplate_dict.get("fullJs", ""),
+                "Rust": boilerplate_dict.get("fullRust", ""),
+                "Java": boilerplate_dict.get("fullJava", "")
+            },
             "Сгенерированные тесткейсы": st.session_state.get("formatted_tests", [])
         }
         # Выводим JSON в консоль
