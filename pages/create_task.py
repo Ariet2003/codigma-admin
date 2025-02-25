@@ -6,6 +6,7 @@ from utils.generate_leetcode_task import generate_leetcode_task
 from utils.generate_tests import generate_tests
 from utils.parse_tests import parse_tests
 from utils.run_tests_on_code import run_judge0_testcases
+from utils.add_problem import add_problem
 
 def show_create_task_page():
     def local_css(file_name):
@@ -68,8 +69,9 @@ def show_create_task_page():
             },
             "Сгенерированные тесткейсы": st.session_state.get("formatted_tests", [])
         }
-        # Выводим JSON в консоль
+        # Выводим JSON в консоль (для отладки)
         print(json.dumps(task_data, ensure_ascii=False, indent=4))
+        return task_data
 
     st.markdown('<div class="create-task-container">', unsafe_allow_html=True)
     st.markdown('<h2>Создание задачи</h2>', unsafe_allow_html=True)
@@ -287,66 +289,80 @@ def show_create_task_page():
                 with col_delete:
                     st.button("Удалить", key=f"delete_test_{i}", on_click=delete_test, args=(i,))
 
-            if st.button("Тестировать тесткейсы", icon="🚀", type="primary"):
-                if "formatted_tests" not in st.session_state:
-                    st.error("Сначала сгенерируйте тесткейсы!")
+        # Кнопка для тестирования тесткейсов
+        if st.button("Тестировать тесткейсы", icon="🚀", type="primary"):
+            if "formatted_tests" not in st.session_state:
+                st.error("Сначала сгенерируйте тесткейсы!")
+            else:
+                # Обновляем данные тестов из текстовых полей
+                for i in range(len(st.session_state["formatted_tests"])):
+                    st.session_state["formatted_tests"][i]["input"] = st.session_state.get(f"test_input_{i}", "")
+                    st.session_state["formatted_tests"][i]["expected_output"] = st.session_state.get(
+                        f"test_output_{i}", "")
+
+                testcases = []
+                for t in st.session_state["formatted_tests"]:
+                    testcases.append({
+                        "stdin": str(t.get("input", "")),
+                        "expected_output": str(t.get("expected_output", ""))
+                    })
+
+                judge0_language_ids = {
+                    "c_cpp": 54,
+                    "javascript": 63,
+                    "rust": 73,
+                    "java": 62
+                }
+                test_lang = st.session_state.get("ace_language", "c_cpp")
+                language_id = judge0_language_ids.get(test_lang, 54)
+
+                if ace_language == "c_cpp":
+                    full_key_test = "fullCpp"
+                elif ace_language == "javascript":
+                    full_key_test = "fullJs"
+                elif ace_language == "rust":
+                    full_key_test = "fullRust"
+                elif ace_language == "java":
+                    full_key_test = "fullJava"
+
+                full_code_test = boilerplate_dict.get(full_key_test, "")
+                prepared_source_code = full_code_test.replace("##USER_CODE_HERE##", test_code)
+
+                data_payload = {
+                    "language_id": language_id,
+                    "source_code": prepared_source_code,
+                    "testcases": testcases
+                }
+                print(data_payload)
+
+                result = run_judge0_testcases(data_payload)
+                print("Результаты тестирования:")
+                print(json.dumps(result, ensure_ascii=False, indent=4))
+
+                # Сохраняем результат тестирования для дальнейшего использования
+                st.session_state["test_result"] = result
+
+                if result.get("status") == 1:
+                    st.success("Все тесты успешно прошли!")
                 else:
-                    for i in range(len(st.session_state["formatted_tests"])):
-                        st.session_state["formatted_tests"][i]["input"] = st.session_state.get(f"test_input_{i}", "")
-                        st.session_state["formatted_tests"][i]["expected_output"] = st.session_state.get(
-                            f"test_output_{i}", "")
-
-                    testcases = []
-                    for t in st.session_state["formatted_tests"]:
-                        testcases.append({
-                            "stdin": str(t.get("input", "")),
-                            "expected_output": str(t.get("expected_output", ""))
-                        })
-
-                    judge0_language_ids = {
-                        "c_cpp": 54,
-                        "javascript": 63,
-                        "rust": 73,
-                        "java": 62
-                    }
-                    test_lang = st.session_state.get("ace_language", "c_cpp")
-                    language_id = judge0_language_ids.get(test_lang, 54)
-
-                    if ace_language == "c_cpp":
-                        full_key_test = "fullCpp"
-                    elif ace_language == "javascript":
-                        full_key_test = "fullJs"
-                    elif ace_language == "rust":
-                        full_key_test = "fullRust"
-                    elif ace_language == "java":
-                        full_key_test = "fullJava"
-
-                    full_code_test = boilerplate_dict.get(full_key_test, "")
-                    prepared_source_code = full_code_test.replace("##USER_CODE_HERE##", test_code)
-
-                    data_payload = {
-                        "language_id": language_id,
-                        "source_code": prepared_source_code,
-                        "testcases": testcases
-                    }
-                    print(data_payload)
-
-                    result = run_judge0_testcases(data_payload)
-                    print("Результаты тестирования:")
-                    print(json.dumps(result, ensure_ascii=False, indent=4))
-
-                    if result.get("status") == 1:
-                        st.success("Все тесты успешно прошли!")
-                        st.button("Добавить задачу", type="primary", on_click=add_task_callback)
+                    incorrect_indexes = result.get("incorrect_test_indexes", [])
+                    stderr = result.get("stderr")
+                    incorrect_indexes = [str(idx + 1) for idx in incorrect_indexes]
+                    if stderr != "Правильно":
+                        st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
+                        st.error("Вывод компиляции: " + stderr)
                     else:
-                        incorrect_indexes = result.get("incorrect_test_indexes", [])
-                        stderr = result.get("stderr")
-                        incorrect_indexes = [str(idx + 1) for idx in incorrect_indexes]
-                        if stderr != "Правильно":
-                            st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
-                            st.error("Вывод компиляции: " + stderr)
-                        else:
-                            st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
-                            st.error("Важно: если вы уверены, что тесткейсы правильные, возможно, код содержит ошибку. Убедитесь, что написанный код также верный.")
+                        st.error("Следующие тесты не прошли: " + ", ".join(incorrect_indexes))
+                        st.error("Важно: если вы уверены, что тесткейсы правильные, возможно, код содержит ошибку. Убедитесь, что написанный код также верный!")
+
+        # Если тесты прошли успешно (результат сохранён в session_state), показываем кнопку для добавления задачи
+        if st.session_state.get("test_result", {}).get("status") == 1:
+            if st.button("Добавить задачу", type="primary"):
+                task_data = add_task_callback()
+                answer = add_problem(task_data)
+                if answer:
+                    st.success("Задача успешно добавлена!")
+                else:
+                    st.error("Что то пошло не так!")
 
     st.markdown('</div>', unsafe_allow_html=True)
