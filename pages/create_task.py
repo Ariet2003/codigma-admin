@@ -8,6 +8,7 @@ from utils.parse_tests import parse_tests
 from utils.run_tests_on_code import run_judge0_testcases
 from utils.add_problem import add_problem
 
+
 def show_create_task_page():
     def local_css(file_name):
         with open(file_name, "r", encoding="utf-8") as f:
