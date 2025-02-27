@@ -38,12 +38,17 @@ def show_create_hackathon_page():
     with start_col:
         st.markdown("#### Начало хакатона")
         start_date = st.date_input("Дата начала", key="start_date", value=datetime.today())
-        start_time_input = st.time_input("Время начала", key="start_time", value=datetime.now().time())
+        if "start_time" not in st.session_state:
+            st.session_state.start_time = datetime.now().time()
+        # Используем ключ, чтобы значение сохранялось
+        start_time_input = st.time_input("Время начала", key="start_time")
 
     with end_col:
         st.markdown("#### Окончание хакатона")
         end_date = st.date_input("Дата окончания", key="end_date", value=datetime.today())
-        end_time_input = st.time_input("Время окончания", key="end_time", value=datetime.now().time())
+        if "end_time" not in st.session_state:
+            st.session_state.end_time = datetime.now().time()
+        end_time_input = st.time_input("Время окончания", key="end_time")
 
     # Флажок для определения, является ли хакатон открытым
     is_open = st.checkbox("Открытый хакатон", key="is_open")
