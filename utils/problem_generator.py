@@ -122,39 +122,42 @@ class FullProblemDefinitionParser(BaseParser):
         for i, field in enumerate(self.inputFields):
             if field["type"].startswith("list<list<"):
                 code = (
-                    f"std::string line;\n"
-                    f"std::getline(std::cin, line);\n"
-                    f"std::istringstream iss(line);\n"
-                    f"int outer_size_{field['name']}; iss >> outer_size_{field['name']};\n"
+                    f"std::string line_{i};\n"
+                    f"std::getline(std::cin, line_{i});\n"
+                    f"std::istringstream iss_{i}(line_{i});\n"
+                    f"int outer_size_{field['name']}; iss_{i} >> outer_size_{field['name']};\n"
                     f"{self.map_type_to_cpp(field['type'])} {field['name']}(outer_size_{field['name']});\n"
-                    f"for (int i = 0; i < outer_size_{field['name']}; i++) {{\n"
-                    f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream inner_iss(line);\n"
-                    f"    int inner_size_{field['name']}; inner_iss >> inner_size_{field['name']};\n"
-                    f"    {field['name']}[i].resize(inner_size_{field['name']});\n"
-                    f"    std::getline(std::cin, line);\n"
-                    f"    std::istringstream elems(line);\n"
-                    f"    for (int j = 0; j < inner_size_{field['name']}; j++) elems >> {field['name']}[i][j];\n"
+                    f"for (int k_{i} = 0; k_{i} < outer_size_{field['name']}; k_{i}++) {{\n"
+                    f"    std::string inner_line_{i};\n"
+                    f"    std::getline(std::cin, inner_line_{i});\n"
+                    f"    std::istringstream inner_iss_{i}(inner_line_{i});\n"
+                    f"    int inner_size_{field['name']}; inner_iss_{i} >> inner_size_{field['name']};\n"
+                    f"    {field['name']}[k_{i}].resize(inner_size_{field['name']});\n"
+                    f"    std::string elems_line_{i};\n"
+                    f"    std::getline(std::cin, elems_line_{i});\n"
+                    f"    std::istringstream elems_{i}(elems_line_{i});\n"
+                    f"    for (int j_{i} = 0; j_{i} < inner_size_{field['name']}; j_{i}++) elems_{i} >> {field['name']}[k_{i}][j_{i}];\n"
                     f"}}"
                 )
             elif field["type"].startswith("list<"):
                 code = (
-                    f"std::string line;\n"
-                    f"std::getline(std::cin, line);\n"
-                    f"std::istringstream iss(line);\n"
-                    f"int size_{field['name']}; iss >> size_{field['name']};\n"
+                    f"std::string line_{i};\n"
+                    f"std::getline(std::cin, line_{i});\n"
+                    f"std::istringstream iss_{i}(line_{i});\n"
+                    f"int size_{field['name']}; iss_{i} >> size_{field['name']};\n"
                     f"{self.map_type_to_cpp(field['type'])} {field['name']}(size_{field['name']});\n"
-                    f"std::getline(std::cin, line);\n"
-                    f"std::istringstream elems(line);\n"
-                    f"for (int i = 0; i < size_{field['name']}; i++) elems >> {field['name']}[i];"
+                    f"std::string elems_line_{i};\n"
+                    f"std::getline(std::cin, elems_line_{i});\n"
+                    f"std::istringstream elems_{i}(elems_line_{i});\n"
+                    f"for (int j_{i} = 0; j_{i} < size_{field['name']}; j_{i}++) elems_{i} >> {field['name']}[j_{i}];"
                 )
             else:
                 code = (
-                    f"std::string line;\n"
-                    f"std::getline(std::cin, line);\n"
-                    f"std::istringstream iss(line);\n"
+                    f"std::string line_{i};\n"
+                    f"std::getline(std::cin, line_{i});\n"
+                    f"std::istringstream iss_{i}(line_{i});\n"
                     f"{self.map_type_to_cpp(field['type'])} {field['name']};\n"
-                    f"iss >> {field['name']};"
+                    f"iss_{i} >> {field['name']};"
                 )
             input_reads_list.append(code)
         input_reads_code = "\n  ".join(input_reads_list)
@@ -168,17 +171,17 @@ class FullProblemDefinitionParser(BaseParser):
         matrix_to_string_func = ""
         if has_matrix_output:
             matrix_to_string_func = """
-    std::string matrixToString(const std::vector<std::vector<int>>& matrix) {
-        std::ostringstream oss;
-        for (const auto& row : matrix) {
-            for (const auto& elem : row) {
-                oss << elem << " ";
+        std::string matrixToString(const std::vector<std::vector<int>>& matrix) {
+            std::ostringstream oss;
+            for (const auto& row : matrix) {
+                for (const auto& elem : row) {
+                    oss << elem << " ";
+                }
+                oss << "\\n";
             }
-            oss << "\\n";
+            return oss.str();
         }
-        return oss.str();
-    }
-    """
+        """
         return f"""#include <iostream>
     #include <sstream>
     #include <vector>

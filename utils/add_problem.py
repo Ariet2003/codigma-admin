@@ -11,29 +11,33 @@ def create_problem_files(json_data):
     """
     Функция создает файловую структуру для задачи.
     В базовой директории (problems) создается папка с именем функции,
-    далее внутри создаются папки inputs, outputs, boilerplate, boilerplate-full,
-    а также файлы Problem.md и Structure.md.
+    форматированным: символы "_" заменяются на "-".
+    Внутри неё создается папка tests, где располагаются подпапки inputs и outputs,
+    а также создаются папки boilerplate, boilerplate-full и файлы Problem.md и Structure.md.
     """
     # Базовая директория (не забудьте, что обратные слэши экранируются или используйте raw-string)
     base_dir = r"C:\Users\ACER\Desktop\DIP\codigma\apps\problems"
 
-    # Имя функции (оно же имя папки задачи)
+    # Получаем имя функции и форматируем его (нижний регистр, "_" заменяем на "-")
     function_name = json_data.get("Название функции", "default_function")
-    problem_dir = os.path.join(base_dir, function_name)
+    formatted_function_name = function_name.replace("_", "-")
+    problem_dir = os.path.join(base_dir, formatted_function_name)
     os.makedirs(problem_dir, exist_ok=True)
 
-    # Создаем подпапки для тесткейсов: inputs и outputs
-    inputs_dir = os.path.join(problem_dir, "inputs")
-    outputs_dir = os.path.join(problem_dir, "outputs")
+    # Создаем папку tests и внутри неё папки inputs и outputs
+    tests_dir = os.path.join(problem_dir, "tests")
+    os.makedirs(tests_dir, exist_ok=True)
+    inputs_dir = os.path.join(tests_dir, "inputs")
+    outputs_dir = os.path.join(tests_dir, "outputs")
     os.makedirs(inputs_dir, exist_ok=True)
     os.makedirs(outputs_dir, exist_ok=True)
 
-    # Создаем файлы для тесткейсов
+    # Создаем файлы тесткейсов
     testcases = json_data.get("Сгенерированные тесткейсы", [])
     for index, tc in enumerate(testcases):
         input_content = tc.get("input", "")
         expected_output = tc.get("expected_output", "")
-        # Записываем входные данные (в файле будут именно реальные переводы строк)
+        # Записываем входные данные
         with open(os.path.join(inputs_dir, f"{index}.txt"), "w", encoding="utf-8") as f:
             f.write(input_content)
         # Записываем ожидаемый результат
@@ -78,7 +82,6 @@ def create_problem_files(json_data):
     structure_lines.append(f"Function Name: {json_data.get('Название функции', '')}")
     structure_lines.append("Input Structure:")
     for inp in structure_data.get("inputs", []):
-        # Формат: "Input Field: <тип> <имя>"
         field_type = inp.get("type", "")
         field_name = inp.get("name", "")
         structure_lines.append(f"Input Field: {field_type} {field_name}")
