@@ -19,8 +19,8 @@ def create_problem_files(json_data):
     base_dir = r"C:\Users\ACER\Desktop\DIP\codigma\apps\problems"
 
     # Получаем имя функции и форматируем его (нижний регистр, "_" заменяем на "-")
-    function_name = json_data.get("Название функции", "default_function")
-    formatted_function_name = function_name.replace("_", "-")
+    function_name = json_data.get("Название задачи", "default_function")
+    formatted_function_name = function_name.lower().replace(" ", "-")
     problem_dir = os.path.join(base_dir, formatted_function_name)
     os.makedirs(problem_dir, exist_ok=True)
 
